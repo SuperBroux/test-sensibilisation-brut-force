@@ -4,6 +4,22 @@ async function loadPasswords() {
     return text.split('\n').map(p => p.trim()).filter(p => p);
 }
 
+function generateVariations(word, replacements) {
+    let variations = [word];
+    for (let [key, values] of Object.entries(replacements)) {
+        let regex = new RegExp(key, 'gi');
+        for (let i = 0; i < variations.length; i++) {
+            for (let value of values) {
+                let newVariation = variations[i].replace(regex, value);
+                if (!variations.includes(newVariation)) {
+                    variations.push(newVariation);
+                }
+            }
+        }
+    }
+    return variations;
+}
+
 async function checkPassword() {
     const password = document.getElementById("password").value;
     const commonPasswords = await loadPasswords();
