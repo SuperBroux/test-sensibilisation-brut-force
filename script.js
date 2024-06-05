@@ -1,10 +1,19 @@
+const specialReplacements = {
+    'a': ['@', '4'],
+    'l': ['1', '!'],
+    'o': ['0'],
+    'i': ['1'],
+    'I': ['l'],
+    's': ['$']
+};
+
 async function loadPasswords() {
     const response = await fetch('passwords.txt');
     const text = await response.text();
     return text.split('\n').map(p => p.trim()).filter(p => p);
 }
 
-function generateVariations(word, replacements) {
+async function generateVariations(word, replacements) {
     let variations = [word];
     for (let [key, values] of Object.entries(replacements)) {
         let regex = new RegExp(key, 'gi');
@@ -18,6 +27,30 @@ function generateVariations(word, replacements) {
         }
     }
     return variations;
+}
+
+function addNumbers(words) {
+    let newWords = [];
+    for (let word of words) {
+        for (let i = 0; i < 100; i++) { // Ajoute des chiffres de 0 à 99
+            newWords.push(word + i);
+        }
+    }
+    return newWords;
+}
+
+function addSpecialChars(words, specialChars) {
+    let newWords = [];
+    for (let word of words) {
+        for (let char of specialChars) {
+            newWords.push(char + word); // Ajoute le caractère spécial au début
+            newWords.push(word + char); // Ajoute le caractère spécial à la fin
+            for (let i = 1; i < word.length; i++) { // Ajoute le caractère spécial à diverses positions à l'intérieur du mot
+                newWords.push(word.slice(0, i) + char + word.slice(i));
+            }
+        }
+    }
+    return newWords;
 }
 
 async function checkPassword() {
@@ -49,6 +82,7 @@ async function checkPassword() {
     for (let guess of allGuesses) {
         console.log("Test du mot de passe :", guess);
         document.getElementById("currentGuess").textContent = `Test du mot de passe : ${guess}`;
+        document.getElementById("testedPasswords").textContent += `${guess}\n`; // Affiche le mot de passe testé
         await new Promise(r => setTimeout(r, 10)); // Simule un délai pour visualiser chaque mot de passe testé
         if (guess === password) {
             const endTime = performance.now();
@@ -72,11 +106,3 @@ async function checkPassword() {
     console.log("Mot de passe non trouvé.");
 }
 
-const specialReplacements = {
-    'a': ['@', '4'],
-    'l': ['1', '!'],
-    'o': ['0'],
-    'i': ['1'],
-    'I': ['l'],
-    's': ['$']
-};
