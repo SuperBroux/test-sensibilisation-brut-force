@@ -71,3 +71,12 @@ async function checkPassword() {
     document.getElementById("currentGuess").textContent = "";
     console.log("Mot de passe non trouvé.");
 }
+
+const specialReplacements = {
+    'a': ['@', '4'],
+    'l': ['1', '!'],
+    'o': ['0'],
+    'i': ['1'],
+    'I': ['l'],
+    's': ['$']
+};
