@@ -61,7 +61,7 @@ async function checkPassword() {
     
     document.getElementById("status").textContent = "Génération des variations avec des caractères spéciaux...";
     console.log("Génération des variations avec des caractères spéciaux...");
-    allGuesses = allGuesses.concat(...commonPasswords.map(word => generateVariations(word, specialReplacements)));
+    allGuesses = allGuesses.concat(...commonPasswords.flatMap(word => generateVariations(word, specialReplacements)));
     console.log("Variations générées :", allGuesses);
     
     document.getElementById("status").textContent = "Ajout de chiffres aux variations...";
