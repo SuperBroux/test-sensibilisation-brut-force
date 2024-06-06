@@ -17,14 +17,16 @@ function generateVariations(word, replacements) {
     let variations = [word];
     for (let [key, values] of Object.entries(replacements)) {
         let regex = new RegExp(key, 'gi');
-        for (let i = 0; i < variations.length; i++) {
+        let newVariations = [];
+        for (let variation of variations) {
             for (let value of values) {
-                let newVariation = variations[i].replace(regex, value);
-                if (!variations.includes(newVariation)) {
-                    variations.push(newVariation);
+                let newVariation = variation.replace(regex, value);
+                if (!variations.includes(newVariation) && !newVariations.includes(newVariation)) {
+                    newVariations.push(newVariation);
                 }
             }
         }
+        variations = variations.concat(newVariations);
     }
     return variations;
 }
@@ -32,7 +34,7 @@ function generateVariations(word, replacements) {
 function addNumbers(words) {
     let newWords = [];
     for (let word of words) {
-        for (let i = 0; i < 100; i++) { // Ajoute des chiffres de 0 à 99
+        for (let i = 0; i < 10; i++) { // Limite les chiffres de 0 à 9
             newWords.push(word + i);
         }
     }
@@ -61,7 +63,9 @@ async function checkPassword() {
     
     document.getElementById("status").textContent = "Génération des variations avec des caractères spéciaux...";
     console.log("Génération des variations avec des caractères spéciaux...");
-    allGuesses = allGuesses.concat(...commonPasswords.flatMap(word => generateVariations(word, specialReplacements)));
+    for (let word of commonPasswords) {
+        allGuesses = allGuesses.concat(generateVariations(word, specialReplacements));
+    }
     console.log("Variations générées :", allGuesses);
     
     document.getElementById("status").textContent = "Ajout de chiffres aux variations...";
@@ -79,24 +83,27 @@ async function checkPassword() {
     console.log("Début du test de brute force...");
     const startTime = performance.now();
 
-    for (let guess of allGuesses) {
-        console.log("Test du mot de passe :", guess);
-        document.getElementById("currentGuess").textContent = `Test du mot de passe : ${guess}`;
-        document.getElementById("testedPasswords").textContent += `${guess}\n`; // Affiche le mot de passe testé
-        await new Promise(r => setTimeout(r, 10)); // Simule un délai pour visualiser chaque mot de passe testé
-        if (guess === password) {
-            const endTime = performance.now();
-            const timeElapsed = endTime - startTime;
-            document.getElementById("status").textContent = "";
-            document.getElementById("result").innerHTML = `
-                Mot de passe trouvé : ${guess} <br>
-                Temps écoulé : ${timeElapsed.toFixed(2)} ms <br>
-                Tentatives : ${allGuesses.indexOf(guess) + 1}
-            `;
-            console.log("Mot de passe trouvé :", guess);
-            console.log("Temps écoulé :", timeElapsed.toFixed(2), "ms");
-            console.log("Nombre de tentatives :", allGuesses.indexOf(guess) + 1);
-            return;
+    for (let i = 0; i < allGuesses.length; i += 100) { // Traite par lots de 100 mots de passe pour éviter de bloquer l'UI
+        let batch = allGuesses.slice(i, i + 100);
+        for (let guess of batch) {
+            console.log("Test du mot de passe :", guess);
+            document.getElementById("currentGuess").textContent = `Test du mot de passe : ${guess}`;
+            document.getElementById("testedPasswords").textContent += `${guess}\n`; // Affiche le mot de passe testé
+            await new Promise(r => setTimeout(r, 10)); // Simule un délai pour visualiser chaque mot de passe testé
+            if (guess === password) {
+                const endTime = performance.now();
+                const timeElapsed = endTime - startTime;
+                document.getElementById("status").textContent = "";
+                document.getElementById("result").innerHTML = `
+                    Mot de passe trouvé : ${guess} <br>
+                    Temps écoulé : ${timeElapsed.toFixed(2)} ms <br>
+                    Tentatives : ${i + batch.indexOf(guess) + 1}
+                `;
+                console.log("Mot de passe trouvé :", guess);
+                console.log("Temps écoulé :", timeElapsed.toFixed(2), "ms");
+                console.log("Nombre de tentatives :", i + batch.indexOf(guess) + 1);
+                return;
+            }
         }
     }
 
