@@ -47,9 +47,6 @@ function addSpecialChars(words, specialChars) {
         for (let char of specialChars) {
             newWords.push(char + word); // Ajoute le caractère spécial au début
             newWords.push(word + char); // Ajoute le caractère spécial à la fin
-            for (let i = 1; i < word.length; i++) { // Ajoute le caractère spécial à diverses positions à l'intérieur du mot
-                newWords.push(word.slice(0, i) + char + word.slice(i));
-            }
         }
     }
     return newWords;
@@ -60,14 +57,14 @@ async function checkPassword() {
     const commonPasswords = await loadPasswords();
     console.log("Mots de passe communs chargés :", commonPasswords);
     let allGuesses = [...commonPasswords];
-    
+
     document.getElementById("status").textContent = "Génération des variations avec des caractères spéciaux...";
     console.log("Génération des variations avec des caractères spéciaux...");
     for (let word of commonPasswords) {
         allGuesses = allGuesses.concat(generateVariations(word, specialReplacements));
     }
     console.log("Variations générées :", allGuesses);
-    
+
     document.getElementById("status").textContent = "Ajout de chiffres aux variations...";
     console.log("Ajout de chiffres aux variations...");
     allGuesses = allGuesses.concat(addNumbers(allGuesses));
@@ -78,13 +75,13 @@ async function checkPassword() {
     console.log("Ajout de caractères spéciaux aux variations...");
     allGuesses = allGuesses.concat(addSpecialChars(allGuesses, specialChars));
     console.log("Caractères spéciaux ajoutés :", allGuesses);
-    
+
     document.getElementById("status").textContent = "Début du test de brute force...";
     console.log("Début du test de brute force...");
     const startTime = performance.now();
 
-    for (let i = 0; i < allGuesses.length; i += 100) { // Traite par lots de 100 mots de passe pour éviter de bloquer l'UI
-        let batch = allGuesses.slice(i, i + 100);
+    for (let i = 0; i < allGuesses.length; i += 10) { // Traite par lots de 10 mots de passe pour éviter de bloquer l'UI
+        let batch = allGuesses.slice(i, i + 10);
         for (let guess of batch) {
             console.log("Test du mot de passe :", guess);
             document.getElementById("currentGuess").textContent = `Test du mot de passe : ${guess}`;
