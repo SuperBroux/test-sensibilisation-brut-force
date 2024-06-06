@@ -1,48 +1,62 @@
 body {
     font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    background-color: #f4f4f4;
     margin: 0;
-    background-color: #f4f4f9;
+    padding: 0;
 }
 
 .container {
-    text-align: center;
-    background-color: #fff;
+    width: 50%;
+    margin: 50px auto;
+    background: #fff;
     padding: 20px;
-    border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
 input[type="password"] {
+    width: calc(100% - 22px);
     padding: 10px;
-    margin: 10px 0;
-    width: 80%;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
 
 button {
-    padding: 10px 20px;
-    background-color: #007bff;
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background: #007bff;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 4px;
     cursor: pointer;
+    font-size: 16px;
 }
 
 button:hover {
-    background-color: #0056b3;
+    background: #0056b3;
 }
 
-#status, #result, #currentGuess {
-    margin-top: 20px;
-    font-size: 1.2em;
+p {
+    font-size: 14px;
+    color: #555;
 }
 
-#currentGuess {
-    font-size: 1em;
-    color: gray;
+pre {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 10px;
+    font-size: 12px;
+    line-height: 1.5;
 }
