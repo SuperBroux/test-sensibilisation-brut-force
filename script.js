@@ -13,7 +13,7 @@ async function loadPasswords() {
     return text.split('\n').map(p => p.trim()).filter(p => p);
 }
 
-async function generateVariations(word, replacements) {
+function generateVariations(word, replacements) {
     let variations = [word];
     for (let [key, values] of Object.entries(replacements)) {
         let regex = new RegExp(key, 'gi');
@@ -105,6 +105,3 @@ async function checkPassword() {
     document.getElementById("currentGuess").textContent = "";
     console.log("Mot de passe non trouvé.");
 }
-``
-
-
