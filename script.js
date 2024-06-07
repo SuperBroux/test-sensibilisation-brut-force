@@ -53,18 +53,38 @@ function addSpecialChars(words, specialChars) {
     return newWords;
 }
 
+function capitalizeVariations(word) {
+    let variations = [word];
+    const length = word.length;
+    for (let i = 0; i < (1 << length); i++) {
+        let variation = word.split('').map((char, index) => (i & (1 << index)) ? char.toUpperCase() : char).join('');
+        if (!variations.includes(variation)) {
+            variations.push(variation);
+        }
+    }
+    return variations;
+}
+
 function addAllCombinations(words, replacements, specialChars) {
     let variations = [];
     for (let word of words) {
         // Substitution de lettres
         let substitutionVariations = generateVariations(word, replacements);
+        // Variations avec majuscules
+        let capitalizedVariations = substitutionVariations.flatMap(capitalizeVariations);
         // Ajout de chiffres avant, après, et avant et après
-        let numberVariations = addNumbers(substitutionVariations);
+        let numberVariations = addNumbers(capitalizedVariations);
         // Ajout de caractères spéciaux avant, après, et avant et après
         let specialCharVariations = addSpecialChars(numberVariations, specialChars);
-        variations.push(...substitutionVariations, ...numberVariations, ...specialCharVariations);
+        variations.push(...substitutionVariations, ...capitalizedVariations, ...numberVariations, ...specialCharVariations);
     }
     return variations;
+}
+
+function formatTime(ms) {
+    const minutes = Math.floor(ms / 60000);
+    const seconds = ((ms % 60000) / 1000).toFixed(2);
+    return `${minutes} minutes et ${seconds} secondes`;
 }
 
 async function checkPassword() {
@@ -87,19 +107,19 @@ async function checkPassword() {
         { message: "Cumul ajout de chiffres avant et après et substitution de lettres dans les mots...", func: () => allGuesses.concat(...addNumbers(generateVariations(allGuesses, specialReplacements))) },
         { message: "Cumul ajout de chiffres après et ajout de caractères spéciaux après les mots...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(allGuesses), specialChars)) },
         { message: "Cumul ajout de chiffres après et ajout de caractères spéciaux avant les mots...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(allGuesses), specialChars)) },
-        { message: "Cumul ajout de chiffres après et ajout de caractères spéciaux avant et après les mots...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(allGuesses), specialChars)) },
+        { message: "Cumul ajout de chiffres après et ajout de caractères spéciaux après et avant les mots...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(allGuesses), specialChars)) },
         { message: "Cumul ajout de chiffres après et ajout de caractères spéciaux après les mots et substitution des caractères...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(generateVariations(allGuesses, specialReplacements)), specialChars)) },
         { message: "Cumul ajout de chiffres après et ajout de caractères spéciaux avant les mots et substitution des caractères...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(generateVariations(allGuesses, specialReplacements)), specialChars)) },
-        { message: "Cumul ajout de chiffres après et ajout de caractères spéciaux avant et après les mots et substitution des caractères...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(generateVariations(allGuesses, specialReplacements)), specialChars)) },
+        { message: "Cumul ajout de chiffres après et ajout de caractères spéciaux après et avant les mots et substitution des caractères...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(generateVariations(allGuesses, specialReplacements)), specialChars)) },
         { message: "Cumul ajout de chiffres avant et ajout de caractères spéciaux après les mots...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(allGuesses), specialChars)) },
         { message: "Cumul ajout de chiffres avant et ajout de caractères spéciaux avant les mots...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(allGuesses), specialChars)) },
-        { message: "Cumul ajout de chiffres avant et ajout de caractères spéciaux avant et après les mots...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(allGuesses), specialChars)) },
+        { message: "Cumul ajout de chiffres avant et ajout de caractères spéciaux après et avant les mots...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(allGuesses), specialChars)) },
         { message: "Cumul ajout de chiffres avant et ajout de caractères spéciaux après les mots et substitution des caractères...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(generateVariations(allGuesses, specialReplacements)), specialChars)) },
         { message: "Cumul ajout de chiffres avant et ajout de caractères spéciaux avant les mots et substitution des caractères...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(generateVariations(allGuesses, specialReplacements)), specialChars)) },
-        { message: "Cumul ajout de chiffres avant et ajout de caractères spéciaux avant et après les mots et substitution des caractères...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(generateVariations(allGuesses, specialReplacements)), specialChars)) },
+        { message: "Cumul ajout de chiffres avant et ajout de caractères spéciaux après et avant les mots et substitution des caractères...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(generateVariations(allGuesses, specialReplacements)), specialChars)) },
         { message: "Cumul ajout de chiffres avant et après et ajout de caractères spéciaux après les mots...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(allGuesses), specialChars)) },
         { message: "Cumul ajout de chiffres avant et après et ajout de caractères spéciaux avant les mots...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(allGuesses), specialChars)) },
-        { message: "Cumul ajout de chiffres avant et après et ajout de caractères spéciaux avant et après les mots...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(allGuesses), specialChars)) },
+        { message: "Cumul ajout de chiffres avant et après et ajout de caractères spéciaux après et avant les mots...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(allGuesses), specialChars)) },
         { message: "Cumul ajout de chiffres avant et après et ajout de caractères spéciaux après les mots et substitution des caractères...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(generateVariations(allGuesses, specialReplacements)), specialChars)) },
         { message: "Cumul ajout de chiffres avant et après et ajout de caractères spéciaux avant les mots et substitution des caractères...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(generateVariations(allGuesses, specialReplacements)), specialChars)) },
         { message: "Cumul ajout de chiffres avant et après et ajout de caractères spéciaux avant et après les mots et substitution des caractères...", func: () => allGuesses.concat(...addSpecialChars(addNumbers(generateVariations(allGuesses, specialReplacements)), specialChars)) }
@@ -120,14 +140,15 @@ async function checkPassword() {
             if (guess === password) {
                 const endTime = performance.now();
                 const timeElapsed = endTime - startTime;
+                const formattedTime = formatTime(timeElapsed);
                 document.getElementById("status").textContent = "";
                 document.getElementById("result").innerHTML = `
                     Mot de passe trouvé : ${guess} <br>
-                    Temps écoulé : ${timeElapsed.toFixed(2)} ms <br>
+                    Temps écoulé : ${formattedTime} <br>
                     Tentatives : ${allGuesses.indexOf(guess) + 1}
                 `;
                 console.log("Mot de passe trouvé :", guess);
-                console.log("Temps écoulé :", timeElapsed.toFixed(2), "ms");
+                console.log("Temps écoulé :", formattedTime);
                 console.log("Nombre de tentatives :", allGuesses.indexOf(guess) + 1);
                 return;
             }
@@ -139,3 +160,4 @@ async function checkPassword() {
     document.getElementById("currentGuess").textContent = "";
     console.log("Votre mot de passe est très solide, le programme n'a pas été capable de le forcer.");
 }
+
