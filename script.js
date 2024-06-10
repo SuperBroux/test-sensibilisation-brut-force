@@ -13,96 +13,128 @@ async function loadPasswords() {
     return text.split('\n').map(p => p.trim()).filter(p => p);
 }
 
+function isValidPassword(password) {
+    const hasMinLength = password.length > 8;
+    const hasDigit = /\d/.test(password);
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasSpecialChar = /[!@#\$%\^&\*]/.test(password);
+
+    return hasMinLength && hasDigit && hasUpperCase && hasLowerCase && hasSpecialChar;
+}
+
 function generateVariations(word, replacements) {
-    let variations = [word];
+    let variations = new Set();
+    variations.add(word);
+
+    // Substitutions de caractères
     for (let [key, values] of Object.entries(replacements)) {
         let regex = new RegExp(key, 'gi');
-        for (let i = 0; i < variations.length; i++) {
+        let tempVariations = new Set();
+        for (let variant of variations) {
             for (let value of values) {
-                let newVariation = variations[i].replace(regex, value);
-                if (!variations.includes(newVariation)) {
-                    variations.push(newVariation);
-                }
+                tempVariations.add(variant.replace(regex, value));
+            }
+        }
+        for (let temp of tempVariations) {
+            variations.add(temp);
+        }
+    }
+
+    // Variations majuscules/minuscules
+    let capitalizedVariations = capitalizeVariations([...variations]);
+    capitalizedVariations.forEach(variant => variations.add(variant));
+
+    // Ajout de chiffres
+    let numberedVariations = addNumbers([...variations]);
+    numberedVariations.forEach(variant => variations.add(variant));
+
+    // Ajout de caractères spéciaux
+    const specialChars = ['!', '@', '#', '$', '%', '&', '*'];
+    let specialCharVariations = addSpecialChars([...variations], specialChars);
+    specialCharVariations.forEach(variant => variations.add(variant));
+
+    // Filtrage des variations pour ne garder que les mots de passe valides
+    return [...variations].filter(isValidPassword);
+}
+
+function capitalizeVariations(words) {
+    let variations = new Set();
+    for (let word of words) {
+        let length = word.length;
+        let combinations = 1 << length; // 2^length combinations
+        for (let i = 0; i < combinations; i++) {
+            let variant = word.split('').map((char, index) => {
+                return (i & (1 << index)) ? char.toUpperCase() : char.toLowerCase();
+            }).join('');
+            variations.add(variant);
+        }
+    }
+    return [...variations];
+}
+
+function addNumbers(words) {
+    let newWords = new Set();
+    for (let word of words) {
+        for (let i = 0; i < 100; i++) { // Ajoute des chiffres de 0 à 99
+            newWords.add(i + word);
+            newWords.add(word + i);
+        }
+    }
+    return [...newWords];
+}
+
+function addSpecialChars(words, specialChars) {
+    let newWords = new Set();
+    for (let word of words) {
+        for (let char of specialChars) {
+            newWords.add(char + word); // Ajoute le caractère spécial au début
+            newWords.add(word + char); // Ajoute le caractère spécial à la fin
+            for (let i = 1; i < word.length; i++) { // Ajoute le caractère spécial à diverses positions à l'intérieur du mot
+                newWords.add(word.slice(0, i) + char + word.slice(i));
             }
         }
     }
-    return variations;
-}
-
-function addNumbers(word) {
-    let variations = [];
-    for (let i = 0; i < 100; i++) {
-        variations.push(word + i);
-        variations.push(i + word);
-        variations.push(i + word + i);
-    }
-    return variations;
-}
-
-function addSpecialChars(word, specialChars) {
-    let variations = [];
-    for (let char of specialChars) {
-        variations.push(char + word);
-        variations.push(word + char);
-        variations.push(char + word + char);
-    }
-    return variations;
-}
-
-function capitalizeVariations(word) {
-    let variations = [word];
-    const length = word.length;
-    for (let i = 0; i < (1 << length); i++) {
-        let variation = word.split('').map((char, index) => (i & (1 << index)) ? char.toUpperCase() : char).join('');
-        if (!variations.includes(variation)) {
-            variations.push(variation);
-        }
-    }
-    return variations;
-}
-
-function generateAllCombinations(word, replacements, specialChars) {
-    let allVariations = generateVariations(word, replacements);
-    let finalVariations = [];
-
-    for (let variation of allVariations) {
-        let capitalizedVariations = capitalizeVariations(variation);
-        for (let capitalized of capitalizedVariations) {
-            let numberVariations = addNumbers(capitalized);
-            for (let numbered of numberVariations) {
-                let specialCharVariations = addSpecialChars(numbered, specialChars);
-                finalVariations.push(...specialCharVariations);
-            }
-        }
-    }
-
-    return finalVariations;
+    return [...newWords];
 }
 
 function formatTime(ms) {
-    const minutes = Math.floor(ms / 60000);
-    const seconds = ((ms % 60000) / 1000).toFixed(2);
-    return `${minutes} minutes et ${seconds} secondes`;
+    let minutes = Math.floor(ms / 60000);
+    let seconds = ((ms % 60000) / 1000).toFixed(0);
+    return minutes + " minutes et " + (seconds < 10 ? '0' : '') + seconds + " secondes";
 }
 
 async function checkPassword() {
     const password = document.getElementById("password").value;
+
+    if (!isValidPassword(password)) {
+        document.getElementById("status").textContent = "";
+        document.getElementById("result").innerHTML = `
+            Votre mot de passe ne remplit pas les critères minimum de sécurité : <br>
+            - Plus de 8 caractères <br>
+            - Au moins un chiffre <br>
+            - Au moins une majuscule <br>
+            - Au moins une minuscule <br>
+            - Au moins un caractère spécial
+        `;
+        return;
+    }
+
     const commonPasswords = await loadPasswords();
-    const specialChars = ['!', '@', '#', '$', '%', '&', '*'];
+    console.log("Mots de passe communs chargés :", commonPasswords);
+    let allGuesses = [];
 
     const startTime = performance.now();
 
     for (let word of commonPasswords) {
-        document.getElementById("status").textContent = `Test des variations pour le mot : ${word}`;
-        console.log(`Test des variations pour le mot : ${word}`);
+        let variations = generateVariations(word, specialReplacements);
+        allGuesses = allGuesses.concat(variations);
 
-        let allVariations = generateAllCombinations(word, specialReplacements, specialChars);
-        for (let guess of allVariations) {
+        for (let guess of variations) {
             console.log("Test du mot de passe :", guess);
             document.getElementById("currentGuess").textContent = `Test du mot de passe : ${guess}`;
-            document.getElementById("testedPasswords").textContent += `${guess}\n`;
-            await new Promise(r => setTimeout(r, 10));
-
+            document.getElementById("testedPasswords").textContent += `${guess}\n`; // Affiche le mot de passe testé
+            await new Promise(r => setTimeout(r, 10)); // Simule un délai pour visualiser chaque mot de passe testé
             if (guess === password) {
                 const endTime = performance.now();
                 const timeElapsed = endTime - startTime;
@@ -111,18 +143,23 @@ async function checkPassword() {
                 document.getElementById("result").innerHTML = `
                     Mot de passe trouvé : ${guess} <br>
                     Temps écoulé : ${formattedTime} <br>
-                    Tentatives : ${allVariations.indexOf(guess) + 1}
+                    Tentatives : ${allGuesses.indexOf(guess) + 1}
                 `;
                 console.log("Mot de passe trouvé :", guess);
                 console.log("Temps écoulé :", formattedTime);
-                console.log("Nombre de tentatives :", allVariations.indexOf(guess) + 1);
+                console.log("Nombre de tentatives :", allGuesses.indexOf(guess) + 1);
                 return;
             }
         }
     }
 
+    const endTime = performance.now();
+    const timeElapsed = endTime - startTime;
+    const formattedTime = formatTime(timeElapsed);
     document.getElementById("status").textContent = "";
     document.getElementById("result").textContent = "Votre mot de passe est très solide, le programme n'a pas été capable de le forcer.";
     document.getElementById("currentGuess").textContent = "";
     console.log("Votre mot de passe est très solide, le programme n'a pas été capable de le forcer.");
+    console.log("Temps écoulé :", formattedTime);
 }
+
