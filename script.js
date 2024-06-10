@@ -130,6 +130,7 @@ async function checkPassword() {
     const commonPasswords = await loadPasswords();
     console.log("Mots de passe communs chargés :", commonPasswords);
     let allGuesses = [];
+    let testedCount = 0;
 
     const startTime = performance.now();
     const batchSize = 100; // Taille du lot
@@ -142,6 +143,9 @@ async function checkPassword() {
             const batch = variations.slice(i, i + batchSize);
             const testPromises = batch.map(guess => testPassword(password, guess));
             const results = await Promise.all(testPromises);
+            testedCount += batch.length;
+            document.getElementById("testedCount").textContent = `Nombre de combinaisons testées : ${testedCount}`;
+
             const foundIndex = results.findIndex(result => result);
 
             if (foundIndex !== -1) {
@@ -153,11 +157,11 @@ async function checkPassword() {
                 document.getElementById("result").innerHTML = `
                     Mot de passe trouvé : ${foundPassword} <br>
                     Temps écoulé : ${formattedTime} <br>
-                    Tentatives : ${allGuesses.indexOf(foundPassword) + 1}
+                    Tentatives : ${testedCount}
                 `;
                 console.log("Mot de passe trouvé :", foundPassword);
                 console.log("Temps écoulé :", formattedTime);
-                console.log("Nombre de tentatives :", allGuesses.indexOf(foundPassword) + 1);
+                console.log("Nombre de tentatives :", testedCount);
                 return;
             }
         }
@@ -169,6 +173,7 @@ async function checkPassword() {
     document.getElementById("status").textContent = "";
     document.getElementById("result").textContent = "Votre mot de passe est très solide, le programme n'a pas été capable de le forcer.";
     document.getElementById("currentGuess").textContent = "";
+    document.getElementById("testedCount").textContent = `Nombre de combinaisons testées : ${testedCount}`;
     console.log("Votre mot de passe est très solide, le programme n'a pas été capable de le forcer.");
     console.log("Temps écoulé :", formattedTime);
 }
