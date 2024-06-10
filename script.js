@@ -104,6 +104,13 @@ function formatTime(ms) {
     return minutes + " minutes et " + (seconds < 10 ? '0' : '') + seconds + " secondes";
 }
 
+async function testPassword(password, guess) {
+    document.getElementById("currentGuess").textContent = `Test du mot de passe : ${guess}`;
+    document.getElementById("testedPasswords").textContent += `${guess}\n`; // Affiche le mot de passe testé
+    await new Promise(r => setTimeout(r, 10)); // Simule un délai pour visualiser chaque mot de passe testé
+    return guess === password;
+}
+
 async function checkPassword() {
     const password = document.getElementById("password").value;
 
@@ -125,29 +132,32 @@ async function checkPassword() {
     let allGuesses = [];
 
     const startTime = performance.now();
+    const batchSize = 100; // Taille du lot
 
     for (let word of commonPasswords) {
         let variations = generateVariations(word, specialReplacements);
         allGuesses = allGuesses.concat(variations);
 
-        for (let guess of variations) {
-            console.log("Test du mot de passe :", guess);
-            document.getElementById("currentGuess").textContent = `Test du mot de passe : ${guess}`;
-            document.getElementById("testedPasswords").textContent += `${guess}\n`; // Affiche le mot de passe testé
-            await new Promise(r => setTimeout(r, 10)); // Simule un délai pour visualiser chaque mot de passe testé
-            if (guess === password) {
+        for (let i = 0; i < variations.length; i += batchSize) {
+            const batch = variations.slice(i, i + batchSize);
+            const testPromises = batch.map(guess => testPassword(password, guess));
+            const results = await Promise.all(testPromises);
+            const foundIndex = results.findIndex(result => result);
+
+            if (foundIndex !== -1) {
                 const endTime = performance.now();
                 const timeElapsed = endTime - startTime;
                 const formattedTime = formatTime(timeElapsed);
+                const foundPassword = batch[foundIndex];
                 document.getElementById("status").textContent = "";
                 document.getElementById("result").innerHTML = `
-                    Mot de passe trouvé : ${guess} <br>
+                    Mot de passe trouvé : ${foundPassword} <br>
                     Temps écoulé : ${formattedTime} <br>
-                    Tentatives : ${allGuesses.indexOf(guess) + 1}
+                    Tentatives : ${allGuesses.indexOf(foundPassword) + 1}
                 `;
-                console.log("Mot de passe trouvé :", guess);
+                console.log("Mot de passe trouvé :", foundPassword);
                 console.log("Temps écoulé :", formattedTime);
-                console.log("Nombre de tentatives :", allGuesses.indexOf(guess) + 1);
+                console.log("Nombre de tentatives :", allGuesses.indexOf(foundPassword) + 1);
                 return;
             }
         }
@@ -162,4 +172,3 @@ async function checkPassword() {
     console.log("Votre mot de passe est très solide, le programme n'a pas été capable de le forcer.");
     console.log("Temps écoulé :", formattedTime);
 }
-
