@@ -45,14 +45,10 @@ function generateVariations(word, replacements) {
     let capitalizedVariations = capitalizeVariations([...variations]);
     capitalizedVariations.forEach(variant => variations.add(variant));
 
-    // Ajout de chiffres
-    let numberedVariations = addNumbers([...variations]);
-    numberedVariations.forEach(variant => variations.add(variant));
-
-    // Ajout de caractères spéciaux
+    // Ajout de chiffres et de caractères spéciaux
     const specialChars = ['!', '@', '#', '$', '%', '&', '*'];
-    let specialCharVariations = addSpecialChars([...variations], specialChars);
-    specialCharVariations.forEach(variant => variations.add(variant));
+    let extendedVariations = addNumbersAndSpecialChars([...variations], specialChars);
+    extendedVariations.forEach(variant => variations.add(variant));
 
     // Filtrage des variations pour ne garder que les mots de passe valides
     return [...variations].filter(isValidPassword);
@@ -73,25 +69,17 @@ function capitalizeVariations(words) {
     return [...variations];
 }
 
-function addNumbers(words) {
+function addNumbersAndSpecialChars(words, specialChars) {
     let newWords = new Set();
     for (let word of words) {
         for (let i = 0; i < 100; i++) { // Ajoute des chiffres de 0 à 99
-            newWords.add(i + word);
-            newWords.add(word + i);
-        }
-    }
-    return [...newWords];
-}
-
-function addSpecialChars(words, specialChars) {
-    let newWords = new Set();
-    for (let word of words) {
-        for (let char of specialChars) {
-            newWords.add(char + word); // Ajoute le caractère spécial au début
-            newWords.add(word + char); // Ajoute le caractère spécial à la fin
-            for (let i = 1; i < word.length; i++) { // Ajoute le caractère spécial à diverses positions à l'intérieur du mot
-                newWords.add(word.slice(0, i) + char + word.slice(i));
+            for (let char of specialChars) {
+                newWords.add(i + word);
+                newWords.add(word + i);
+                newWords.add(char + word);
+                newWords.add(word + char);
+                newWords.add(i + char + word);
+                newWords.add(word + char + i);
             }
         }
     }
@@ -133,7 +121,7 @@ async function checkPassword() {
     let testedCount = 0;
 
     const startTime = performance.now();
-    const batchSize = 10; // Taille du lot
+    const batchSize = 100; // Taille du lot
 
     // Fonction pour mettre à jour le temps écoulé et le temps estimé restant
     function updateTimer() {
