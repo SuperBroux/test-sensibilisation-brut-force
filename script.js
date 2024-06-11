@@ -1,4 +1,4 @@
-    <script>
+   <script>
         const specialReplacements = {
             'a': ['@', '4'],
             'l': ['1', '!'],
@@ -130,5 +130,4 @@
         }
     </script>
 </body>
-</html>
 
