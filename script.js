@@ -133,7 +133,7 @@ async function checkPassword() {
     let testedCount = 0;
 
     const startTime = performance.now();
-    const batchSize = 100; // Taille du lot
+    const batchSize = 10; // Taille du lot
 
     // Fonction pour mettre à jour le temps écoulé et le temps estimé restant
     function updateTimer() {
