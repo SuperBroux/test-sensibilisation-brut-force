@@ -1,24 +1,3 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vérificateur de solidité du mot de passe</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <div class="container">
-        <h1>Vérificateur de solidité du mot de passe</h1>
-        <label for="password">Entrez votre mot de passe :</label>
-        <input type="password" id="password" maxlength="15">
-        <button onclick="checkPassword()">Découvrir la solidité du mot de passe</button>
-        <p id="status"></p>
-        <p id="result"></p>
-        <p id="currentGuess"></p>
-        <p id="testedPasswordsCount"></p>
-        <p id="elapsedTime"></p>
-        <p id="estimatedTime"></p>
-    </div>
     <script>
         const specialReplacements = {
             'a': ['@', '4'],
@@ -36,7 +15,7 @@
             const hasDigit = /\d/.test(password);
             const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
-            return password.length > minLength && hasUpperCase && hasLowerCase && hasDigit && hasSpecialChar;
+            return password.length >= minLength && hasUpperCase && hasLowerCase && hasDigit && hasSpecialChar;
         }
 
         async function loadPasswords() {
@@ -118,26 +97,22 @@
             console.log("Début du test de brute force...");
             const startTime = performance.now();
 
-            const batchSize = 100;
-            for (let i = 0; i < allGuesses.length; i += batchSize) {
-                const batch = allGuesses.slice(i, i + batchSize);
-                await Promise.all(batch.map(async (guess) => {
-                    if (guess === password) {
-                        const endTime = performance.now();
-                        const timeElapsed = endTime - startTime;
-                        document.getElementById("status").textContent = "";
-                        document.getElementById("result").innerHTML = `
-                            Mot de passe trouvé : ${guess} <br>
-                            Temps écoulé : ${Math.floor(timeElapsed / 60000)} min ${Math.floor((timeElapsed % 60000) / 1000)} sec <br>
-                            Tentatives : ${testedPasswordsCount}
-                        `;
-                        console.log("Mot de passe trouvé :", guess);
-                        console.log("Temps écoulé :", timeElapsed, "ms");
-                        console.log("Nombre de tentatives :", testedPasswordsCount);
-                        return;
-                    }
-                }));
-                testedPasswordsCount += batch.length;
+            for (let guess of allGuesses) {
+                if (guess === password) {
+                    const endTime = performance.now();
+                    const timeElapsed = endTime - startTime;
+                    document.getElementById("status").textContent = "";
+                    document.getElementById("result").innerHTML = `
+                        Mot de passe trouvé : ${guess} <br>
+                        Temps écoulé : ${Math.floor(timeElapsed / 60000)} min ${Math.floor((timeElapsed % 60000) / 1000)} sec <br>
+                        Tentatives : ${testedPasswordsCount}
+                    `;
+                    console.log("Mot de passe trouvé :", guess);
+                    console.log("Temps écoulé :", timeElapsed, "ms");
+                    console.log("Nombre de tentatives :", testedPasswordsCount);
+                    return;
+                }
+                testedPasswordsCount++;
                 document.getElementById("testedPasswordsCount").textContent = `Nombre de combinaisons testées : ${testedPasswordsCount}`;
 
                 const elapsedTime = performance.now() - startTime;
@@ -156,3 +131,4 @@
     </script>
 </body>
 </html>
+
