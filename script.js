@@ -128,6 +128,4 @@
             document.getElementById("currentGuess").textContent = "";
             console.log("Mot de passe non trouvé.");
         }
-    </script>
-</body>
 
