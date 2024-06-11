@@ -133,7 +133,7 @@ async function checkPassword() {
     let testedCount = 0;
 
     const startTime = performance.now();
-    const batchSize = 100; // Taille du lot
+    const batchSize = 10000; // Taille du lot
 
     for (let word of commonPasswords) {
         let variations = generateVariations(word, specialReplacements);
