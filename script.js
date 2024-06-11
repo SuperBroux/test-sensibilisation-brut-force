@@ -133,37 +133,57 @@ async function checkPassword() {
     let testedCount = 0;
 
     const startTime = performance.now();
-    const batchSize = 10000; // Taille du lot
+    const batchSize = 100; // Taille du lot
+
+    // Fonction pour mettre à jour le temps écoulé et le temps estimé restant
+    function updateTimer() {
+        const currentTime = performance.now();
+        const elapsedTime = currentTime - startTime;
+        document.getElementById("elapsedTime").textContent = `Temps écoulé : ${formatTime(elapsedTime)}`;
+
+        // Estimation du temps restant
+        if (testedCount > 0) {
+            const averageTimePerGuess = elapsedTime / testedCount;
+            const remainingGuesses = allGuesses.length - testedCount;
+            const estimatedTimeRemaining = averageTimePerGuess * remainingGuesses;
+            document.getElementById("estimatedTime").textContent = `Temps estimé restant : ${formatTime(estimatedTimeRemaining)}`;
+        }
+    }
+
+    setInterval(updateTimer, 1000); // Met à jour toutes les secondes
 
     for (let word of commonPasswords) {
         let variations = generateVariations(word, specialReplacements);
         allGuesses = allGuesses.concat(variations);
+    }
 
-        for (let i = 0; i < variations.length; i += batchSize) {
-            const batch = variations.slice(i, i + batchSize);
-            const testPromises = batch.map(guess => testPassword(password, guess));
-            const results = await Promise.all(testPromises);
-            testedCount += batch.length;
-            document.getElementById("testedCount").textContent = `Nombre de combinaisons testées : ${testedCount}`;
+    document.getElementById("status").textContent = "Début du test de brute force...";
+    console.log("Début du test de brute force...");
 
-            const foundIndex = results.findIndex(result => result);
+    for (let i = 0; i < allGuesses.length; i += batchSize) {
+        const batch = allGuesses.slice(i, i + batchSize);
+        const results = await Promise.all(batch.map(guess => testPassword(password, guess)));
+        testedCount += batch.length;
 
-            if (foundIndex !== -1) {
-                const endTime = performance.now();
-                const timeElapsed = endTime - startTime;
-                const formattedTime = formatTime(timeElapsed);
-                const foundPassword = batch[foundIndex];
-                document.getElementById("status").textContent = "";
-                document.getElementById("result").innerHTML = `
-                    Mot de passe trouvé : ${foundPassword} <br>
-                    Temps écoulé : ${formattedTime} <br>
-                    Tentatives : ${testedCount}
-                `;
-                console.log("Mot de passe trouvé :", foundPassword);
-                console.log("Temps écoulé :", formattedTime);
-                console.log("Nombre de tentatives :", testedCount);
-                return;
-            }
+        document.getElementById("testedCount").textContent = `Nombre de combinaisons testées : ${testedCount}`;
+
+        const foundIndex = results.findIndex(result => result);
+
+        if (foundIndex !== -1) {
+            const endTime = performance.now();
+            const timeElapsed = endTime - startTime;
+            const formattedTime = formatTime(timeElapsed);
+            const foundPassword = batch[foundIndex];
+            document.getElementById("status").textContent = "";
+            document.getElementById("result").innerHTML = `
+                Mot de passe trouvé : ${foundPassword} <br>
+                Temps écoulé : ${formattedTime} <br>
+                Tentatives : ${testedCount}
+            `;
+            console.log("Mot de passe trouvé :", foundPassword);
+            console.log("Temps écoulé :", formattedTime);
+            console.log("Nombre de tentatives :", testedCount);
+            return;
         }
     }
 
