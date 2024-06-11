@@ -1,27 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test de mot de passe</title>
+    <title>Vérificateur de solidité du mot de passe</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>Test de mot de passe</h1>
-        <div class="form-group">
-            <label for="password">Mot de passe à tester :</label>
-            <input type="password" id="password">
-            <button onclick="checkPassword()">Tester le mot de passe</button>
-        </div>
-        <div id="status"></div>
-        <div id="currentGuess"></div>
-        <div id="result"></div>
-        <div id="testedPasswords" style="display: none;"></div>
-        <div id="testedCount">Nombre de combinaisons testées : 0</div>
-        <div id="elapsedTime">Temps écoulé : 0 secondes</div>
-        <div id="estimatedTime">Temps estimé restant : calcul en cours...</div>
+        <h1>Vérificateur de solidité du mot de passe</h1>
+        <label for="password">Entrez votre mot de passe :</label>
+        <input type="password" id="password" maxlength="15">
+        <button onclick="checkPassword()">Découvrir la solidité du mot de passe</button>
+        <p id="status"></p>
+        <p id="result"></p>
+        <p id="currentGuess"></p>
+        <p id="testedPasswordsCount"></p>
+        <p id="elapsedTime"></p>
+        <p id="estimatedTime"></p>
     </div>
-    <script src="script.js"></script>
-</body>
-</html>
